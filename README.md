@@ -136,7 +136,7 @@ Intent Classifier Node  ← (classifies: order_status | product_query |
 ┌───────────────────────────────────────────┐
 │  Order Agent  │ Product Agent │ Return    │
 │               │               │ Agent     │
-│  Recommendation Agent  │  Fallback/Escalation  │
+│Recommendation Agent│ Fallback/Escalation  │
 └───────────────────────────────────────────┘
     ↓
 Memory Update Node  ← (updates follow_up_context)
@@ -158,7 +158,7 @@ Output → User
         "product_keyword": "jacket"
     },
     "escalation_flag": False,    # Triggers fallback
-    "turn_count": 3,
+    "turn_count": 3, 
     "consecutive_same_intent": 0,
     "last_agent_response": "..."
 }
