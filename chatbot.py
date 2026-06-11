@@ -164,6 +164,50 @@ def main():
                 traceback.print_exc()
 
 
+def run_sample_conversation():
+    """
+    Runs the sample end-to-end conversation from the task description.
+    Validates: multi-order ambiguity handling + follow-up context (return after order).
+    """
+    print("\n" + "="*60)
+    print("   Running Sample End-to-End Conversation Test")
+    print("="*60)
 
-if __name__ == '__main__':
-    main()
+    langsmith_enabled = setup_langsmith()
+    graph = build_graph()
+
+    # Find a customer with multiple orders for the demo
+    from tools.db_tools import run_raw_sql
+    rows = run_raw_sql("""
+        SELECT customer_id, COUNT(*) as cnt 
+        FROM orders 
+        WHERE status IN ('shipped','processing','delivered')
+        GROUP BY customer_id HAVING cnt >= 2 LIMIT 1
+    """)
+    customer_id = rows[0]["customer_id"] if rows else "C0001"
+
+    print(f"\nUsing customer: {customer_id}")
+    state = create_initial_state(customer_id)
+
+    conversation = [
+        "Where is my order?",          # Should trigger multi-order clarification
+        "The jacket",                   # Disambiguate — pick jacket order
+        "Can I return it?",             # Follow-up using context from previous turn
+    ]
+
+    for i, user_msg in enumerate(conversation, 1):
+        print(f"\n[Turn {i}] You: {user_msg}")
+        state["messages"] = state["messages"] + [HumanMessage(content=user_msg)]
+        state = graph.invoke(state, config={"run_name": f"sample-conversation-turn-{i}"})
+        response = state.get("last_agent_response", "")
+        print(f"ShopBot: {response}")
+        print(f"  [Context: {state.get('follow_up_context')}]")
+
+    print("\n✅ Sample conversation completed.")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--sample":
+        run_sample_conversation()
+    else:
+        main()
