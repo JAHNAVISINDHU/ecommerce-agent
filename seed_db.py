@@ -117,8 +117,51 @@ def create_tables(conn):
     print("✓ Tables created successfully.")
 
 
+def seed_customers(conn, count=60):
+    cursor = conn.cursor()
+    customers = []
+    for i in range(1, count + 1):
+        cid = f"C{i:04d}"
+        customers.append((
+            cid,
+            fake.name(),
+            fake.unique.email(),
+            fake.phone_number()[:15],
+            fake.street_address(),
+            fake.city(),
+            fake.state_abbr(),
+            fake.zipcode(),
+            fake.date_time_between(start_date="-2y", end_date="-6m").isoformat()
+        ))
+    cursor.executemany(
+        "INSERT INTO customers VALUES (?,?,?,?,?,?,?,?,?)", customers
+    )
+    conn.commit()
+    print(f"✓ Seeded {len(customers)} customers.")
+    return [c[0] for c in customers]
+
+
+def seed_products(conn):
+    cursor = conn.cursor()
+    products = []
+    for i, (name, category, price, stock) in enumerate(PRODUCTS_DATA, 1):
+        pid = f"P{i:04d}"
+        rating = round(random.uniform(3.5, 5.0), 1)
+        products.append((
+            pid, name, category, price, stock, rating,
+            fake.sentence(nb_words=12),
+            fake.date_time_between(start_date="-1y", end_date="-3m").isoformat()
+        ))
+    cursor.executemany(
+        "INSERT INTO products VALUES (?,?,?,?,?,?,?,?)", products
+    )
+    conn.commit()
+    print(f"✓ Seeded {len(products)} products.")
+    return [p[0] for p in products]
+
+
 
 def main():
-    print('Tables initialized')
+    print('Customers and products initialized')
 if __name__ == '__main__':
     main()
