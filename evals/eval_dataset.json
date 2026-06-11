@@ -1,0 +1,212 @@
+[
+  {
+    "id": "eval_001",
+    "query": "Where is my order?",
+    "expected_intent": "order_status",
+    "expected_keywords": ["order", "status", "tracking"],
+    "notes": "Basic order status query"
+  },
+  {
+    "id": "eval_002",
+    "query": "When will my package arrive?",
+    "expected_intent": "order_status",
+    "expected_keywords": ["delivery", "arrive", "date"],
+    "notes": "Delivery date query"
+  },
+  {
+    "id": "eval_003",
+    "query": "Has my shipment been dispatched?",
+    "expected_intent": "order_status",
+    "expected_keywords": ["shipped", "dispatched"],
+    "notes": "Shipment status"
+  },
+  {
+    "id": "eval_004",
+    "query": "I want to cancel my order O1005",
+    "expected_intent": "order_status",
+    "expected_keywords": ["cancel", "order"],
+    "notes": "Cancellation request"
+  },
+  {
+    "id": "eval_005",
+    "query": "Track my order number O1002",
+    "expected_intent": "order_status",
+    "expected_keywords": ["tracking", "O1002"],
+    "notes": "Specific order tracking"
+  },
+  {
+    "id": "eval_006",
+    "query": "Is the wireless headphones in stock?",
+    "expected_intent": "product_query",
+    "expected_keywords": ["stock", "available", "headphone"],
+    "notes": "Stock availability query"
+  },
+  {
+    "id": "eval_007",
+    "query": "How much does the yoga mat cost?",
+    "expected_intent": "product_query",
+    "expected_keywords": ["price", "cost", "yoga mat"],
+    "notes": "Price query"
+  },
+  {
+    "id": "eval_008",
+    "query": "Do you have any running shoes available?",
+    "expected_intent": "product_query",
+    "expected_keywords": ["available", "running shoes"],
+    "notes": "Product availability"
+  },
+  {
+    "id": "eval_009",
+    "query": "What electronics do you sell?",
+    "expected_intent": "product_query",
+    "expected_keywords": ["electronics", "products"],
+    "notes": "Category browse"
+  },
+  {
+    "id": "eval_010",
+    "query": "Tell me about the coffee maker",
+    "expected_intent": "product_query",
+    "expected_keywords": ["coffee maker", "details"],
+    "notes": "Product detail query"
+  },
+  {
+    "id": "eval_011",
+    "query": "I want to return my purchase",
+    "expected_intent": "return_request",
+    "expected_keywords": ["return", "refund"],
+    "notes": "Basic return request"
+  },
+  {
+    "id": "eval_012",
+    "query": "How do I get a refund?",
+    "expected_intent": "return_request",
+    "expected_keywords": ["refund", "money back"],
+    "notes": "Refund inquiry"
+  },
+  {
+    "id": "eval_013",
+    "query": "The item I received is defective, can I send it back?",
+    "expected_intent": "return_request",
+    "expected_keywords": ["defective", "send back", "return"],
+    "notes": "Defective item return"
+  },
+  {
+    "id": "eval_014",
+    "query": "What is the status of my return request?",
+    "expected_intent": "return_request",
+    "expected_keywords": ["status", "return"],
+    "notes": "Return status check"
+  },
+  {
+    "id": "eval_015",
+    "query": "Can I exchange this for a different size?",
+    "expected_intent": "return_request",
+    "expected_keywords": ["exchange", "size", "return"],
+    "notes": "Exchange/size issue"
+  },
+  {
+    "id": "eval_016",
+    "query": "What products would you recommend for me?",
+    "expected_intent": "recommendation",
+    "expected_keywords": ["recommend", "suggest"],
+    "notes": "General recommendation"
+  },
+  {
+    "id": "eval_017",
+    "query": "I'm looking for a good gift under 50 dollars",
+    "expected_intent": "recommendation",
+    "expected_keywords": ["gift", "recommend", "budget"],
+    "notes": "Budget-based recommendation"
+  },
+  {
+    "id": "eval_018",
+    "query": "What are your best-selling sports products?",
+    "expected_intent": "recommendation",
+    "expected_keywords": ["sports", "best", "recommend"],
+    "notes": "Category recommendation"
+  },
+  {
+    "id": "eval_019",
+    "query": "Suggest something for a home cook",
+    "expected_intent": "recommendation",
+    "expected_keywords": ["suggest", "home", "kitchen"],
+    "notes": "Interest-based recommendation"
+  },
+  {
+    "id": "eval_020",
+    "query": "What should I buy for a fitness enthusiast?",
+    "expected_intent": "recommendation",
+    "expected_keywords": ["fitness", "recommend", "sports"],
+    "notes": "Profile-based recommendation"
+  },
+  {
+    "id": "eval_021",
+    "query": "Hello, how are you?",
+    "expected_intent": "unknown",
+    "expected_keywords": ["hello", "help"],
+    "notes": "Greeting - unknown intent"
+  },
+  {
+    "id": "eval_022",
+    "query": "Your website is terrible",
+    "expected_intent": "unknown",
+    "expected_keywords": ["sorry", "help", "assist"],
+    "notes": "Complaint - unknown intent"
+  },
+  {
+    "id": "eval_023",
+    "query": "Can I return it?",
+    "expected_intent": "return_request",
+    "expected_keywords": ["return"],
+    "notes": "Follow-up return (short form)"
+  },
+  {
+    "id": "eval_024",
+    "query": "What's the tracking number?",
+    "expected_intent": "order_status",
+    "expected_keywords": ["tracking"],
+    "notes": "Tracking number request"
+  },
+  {
+    "id": "eval_025",
+    "query": "Is it out of stock?",
+    "expected_intent": "product_query",
+    "expected_keywords": ["stock", "available"],
+    "notes": "Availability follow-up"
+  },
+  {
+    "id": "eval_026",
+    "query": "My order was delivered but it was broken",
+    "expected_intent": "return_request",
+    "expected_keywords": ["broken", "return", "refund"],
+    "notes": "Damaged delivery - return"
+  },
+  {
+    "id": "eval_027",
+    "query": "Show me books under 40 dollars",
+    "expected_intent": "product_query",
+    "expected_keywords": ["books", "price"],
+    "notes": "Category + budget filter"
+  },
+  {
+    "id": "eval_028",
+    "query": "I haven't received my order yet",
+    "expected_intent": "order_status",
+    "expected_keywords": ["order", "received", "delivery"],
+    "notes": "Missing order inquiry"
+  },
+  {
+    "id": "eval_029",
+    "query": "Do you have any beauty products?",
+    "expected_intent": "product_query",
+    "expected_keywords": ["beauty", "products"],
+    "notes": "Category browse"
+  },
+  {
+    "id": "eval_030",
+    "query": "What are your top rated items?",
+    "expected_intent": "recommendation",
+    "expected_keywords": ["top", "rated", "best"],
+    "notes": "Top-rated recommendation request"
+  }
+]
