@@ -123,3 +123,83 @@ Be warm, empathetic, and reassuring. End with a positive note.
 """
 
 # ── Prompt builders ───────────────────────────────────────────────────────────
+
+def get_intent_classifier_prompt() -> ChatPromptTemplate:
+    return ChatPromptTemplate.from_messages([
+        ("system", INTENT_CLASSIFIER_PROMPT),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+
+def get_order_agent_prompt() -> ChatPromptTemplate:
+    return ChatPromptTemplate.from_messages([
+        ("system", ORDER_STATUS_PROMPT),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+
+def get_product_agent_prompt() -> ChatPromptTemplate:
+    return ChatPromptTemplate.from_messages([
+        ("system", PRODUCT_QUERY_PROMPT),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+
+def get_return_agent_prompt() -> ChatPromptTemplate:
+    return ChatPromptTemplate.from_messages([
+        ("system", RETURN_AGENT_PROMPT),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+
+def get_recommendation_prompt() -> ChatPromptTemplate:
+    return ChatPromptTemplate.from_messages([
+        ("system", RECOMMENDATION_PROMPT),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+
+def get_fallback_prompt() -> ChatPromptTemplate:
+    return ChatPromptTemplate.from_messages([
+        ("system", FALLBACK_PROMPT),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+
+
+def try_pull_from_hub(prompt_name: str, fallback_fn):
+    """
+    Attempt to pull a prompt from LangSmith Hub.
+    Falls back to local prompt if Hub is not configured or pull fails.
+    """
+    try:
+        from langchain import hub
+        api_key = os.environ.get("LANGSMITH_API_KEY", "")
+        if not api_key or api_key == "your_langsmith_api_key_here":
+            raise ValueError("LangSmith API key not configured")
+        prompt = hub.pull(prompt_name)
+        print(f"✓ Pulled prompt from Hub: {prompt_name}")
+        return prompt
+    except Exception as e:
+        print(f"  Using local prompt for '{prompt_name}' (Hub unavailable: {e})")
+        return fallback_fn()
+
+
+def save_prompts_to_files():
+    """Save all prompt texts to the prompts/ directory."""
+    prompts_dir = os.path.join(os.path.dirname(__file__))
+    os.makedirs(prompts_dir, exist_ok=True)
+
+    prompt_map = {
+        "intent_classifier.txt": INTENT_CLASSIFIER_PROMPT,
+        "order_status_agent.txt": ORDER_STATUS_PROMPT,
+        "product_query_agent.txt": PRODUCT_QUERY_PROMPT,
+        "return_agent.txt": RETURN_AGENT_PROMPT,
+        "recommendation_agent.txt": RECOMMENDATION_PROMPT,
+        "fallback_agent.txt": FALLBACK_PROMPT,
+    }
+    for filename, content in prompt_map.items():
+        path = os.path.join(prompts_dir, filename)
+        with open(path, "w", encoding="utf-8") as f:
+        with open(path, "w") as f:
+            f.write(content)
+    print(f"✓ Saved {len(prompt_map)} prompt files to prompts/ directory.")
