@@ -267,3 +267,65 @@ def initiate_return(order_id: str, customer_id: str, reason: str) -> Dict:
 
 
 # ─── Recommendation Tools ────────────────────────────────────────────────────
+
+@tool
+def get_customer_purchase_categories(customer_id: str) -> List[str]:
+    """Get list of categories the customer has already purchased from."""
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT p.category
+            FROM orders o
+            JOIN products p ON o.product_id = p.product_id
+            WHERE o.customer_id = ?
+        """, (customer_id,))
+        return [row[0] for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
+
+@tool
+def get_recommendations_for_new_categories(customer_id: str, max_price: Optional[float] = None) -> List[Dict]:
+    """Recommend top-rated products from categories the customer hasn't bought from."""
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT p.category FROM orders o
+            JOIN products p ON o.product_id = p.product_id
+            WHERE o.customer_id = ?
+        """, (customer_id,))
+        purchased_cats = [row[0] for row in cursor.fetchall()]
+
+        if not purchased_cats:
+            return get_top_rated_products.invoke({"max_price": max_price})
+
+        placeholders = ",".join("?" * len(purchased_cats))
+        base_query = f"""
+            SELECT product_id, name, category, price, stock_count, rating
+            FROM products
+            WHERE category NOT IN ({placeholders}) AND stock_count > 0
+        """
+        params = purchased_cats[:]
+        if max_price:
+            base_query += " AND price <= ?"
+            params.append(max_price)
+        base_query += " ORDER BY rating DESC LIMIT 5"
+        cursor.execute(base_query, params)
+        return rows_to_dicts(cursor.fetchall())
+    finally:
+        conn.close()
+
+
+# ─── Raw SQL (for advanced use) ───────────────────────────────────────────────
+
+def run_raw_sql(query: str, params: tuple = ()) -> List[Dict]:
+    """Execute raw SQL and return rows as dicts. USE ONLY FOR READ queries."""
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        return rows_to_dicts(cursor.fetchall())
+    finally:
+        conn.close()
