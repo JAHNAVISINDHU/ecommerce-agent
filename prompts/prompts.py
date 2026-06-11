@@ -200,6 +200,5 @@ def save_prompts_to_files():
     for filename, content in prompt_map.items():
         path = os.path.join(prompts_dir, filename)
         with open(path, "w", encoding="utf-8") as f:
-        with open(path, "w") as f:
             f.write(content)
     print(f"✓ Saved {len(prompt_map)} prompt files to prompts/ directory.")
