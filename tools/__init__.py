@@ -1,0 +1,15 @@
+from .db_tools import (
+    get_orders_by_customer,
+    get_order_by_id,
+    get_active_orders_by_customer,
+    search_products,
+    get_product_by_id,
+    get_products_by_category,
+    get_top_rated_products,
+    get_return_by_order,
+    get_returns_by_customer,
+    check_order_return_eligibility,
+    initiate_return,
+    get_customer_purchase_categories,
+    get_recommendations_for_new_categories,
+)
