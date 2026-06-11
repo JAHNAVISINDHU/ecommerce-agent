@@ -160,8 +160,139 @@ def seed_products(conn):
     return [p[0] for p in products]
 
 
+def seed_orders(conn, customer_ids, product_ids, count=120):
+    cursor = conn.cursor()
+    orders = []
+    order_id_counter = 1000
+
+    # Ensure at least 10 customers have multiple orders
+    multi_order_customers = random.sample(customer_ids, 15)
+    for cid in multi_order_customers:
+        for _ in range(random.randint(2, 4)):
+            pid = random.choice(product_ids)
+            cursor.execute("SELECT price FROM products WHERE product_id=?", (pid,))
+            price = cursor.fetchone()[0]
+            qty = random.randint(1, 3)
+            status = random.choices(ORDER_STATUSES, weights=[20, 25, 45, 10])[0]
+            tracking = f"TRK{random.randint(100000, 999999)}" if status in ("shipped", "delivered") else None
+            order_date = fake.date_time_between(start_date="-1y", end_date="-7d")
+            est_delivery = (order_date + timedelta(days=random.randint(3, 10))).isoformat()
+            actual_delivery = (order_date + timedelta(days=random.randint(3, 8))).isoformat() if status == "delivered" else None
+            orders.append((
+                f"O{order_id_counter}", cid, pid, qty,
+                round(price * qty, 2), status, tracking,
+                est_delivery, actual_delivery, order_date.isoformat()
+            ))
+            order_id_counter += 1
+
+    # Fill remaining orders with random customers
+    remaining = count - len(orders)
+    single_order_customers = [c for c in customer_ids if c not in multi_order_customers]
+    for _ in range(remaining):
+        cid = random.choice(single_order_customers)
+        pid = random.choice(product_ids)
+        cursor.execute("SELECT price FROM products WHERE product_id=?", (pid,))
+        price = cursor.fetchone()[0]
+        qty = random.randint(1, 2)
+        status = random.choices(ORDER_STATUSES, weights=[20, 25, 45, 10])[0]
+        tracking = f"TRK{random.randint(100000, 999999)}" if status in ("shipped", "delivered") else None
+        order_date = fake.date_time_between(start_date="-1y", end_date="-7d")
+        est_delivery = (order_date + timedelta(days=random.randint(3, 10))).isoformat()
+        actual_delivery = (order_date + timedelta(days=random.randint(3, 8))).isoformat() if status == "delivered" else None
+        orders.append((
+            f"O{order_id_counter}", cid, pid, qty,
+            round(price * qty, 2), status, tracking,
+            est_delivery, actual_delivery, order_date.isoformat()
+        ))
+        order_id_counter += 1
+
+    cursor.executemany(
+        "INSERT INTO orders VALUES (?,?,?,?,?,?,?,?,?,?)", orders
+    )
+    conn.commit()
+    print(f"✓ Seeded {len(orders)} orders.")
+    return [(o[0], o[1]) for o in orders]  # (order_id, customer_id)
+
+
+def seed_returns(conn, orders_info, count=30):
+    """Only create returns for delivered orders."""
+    cursor = conn.cursor()
+
+    # Get all delivered orders
+    cursor.execute("""
+        SELECT o.order_id, o.customer_id, o.total_price 
+        FROM orders o WHERE o.status = 'delivered'
+    """)
+    delivered = cursor.fetchall()
+
+    returns = []
+    return_id_counter = 1
+    selected = random.sample(delivered, min(count, len(delivered)))
+
+    for order_id, customer_id, total_price in selected:
+        status = random.choices(RETURN_STATUSES, weights=[25, 40, 10, 25])[0]
+        initiated = fake.date_time_between(start_date="-6m", end_date="-1d")
+        resolved = (initiated + timedelta(days=random.randint(2, 7))).isoformat() if status in ("approved", "rejected", "completed") else None
+        refund = round(total_price * random.uniform(0.8, 1.0), 2) if status in ("approved", "completed") else None
+        returns.append((
+            f"R{return_id_counter:04d}", order_id, customer_id,
+            random.choice(["Defective product", "Wrong item received", "Changed my mind", "Size issue", "Not as described"]),
+            status, refund, initiated.isoformat(), resolved
+        ))
+        return_id_counter += 1
+
+    cursor.executemany(
+        "INSERT INTO returns VALUES (?,?,?,?,?,?,?,?)", returns
+    )
+    conn.commit()
+    print(f"✓ Seeded {len(returns)} returns.")
+
+
+def verify_db(conn):
+    cursor = conn.cursor()
+    tables = ["customers", "products", "orders", "returns"]
+    print("\n📊 Database Summary:")
+    print("-" * 40)
+    for table in tables:
+        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+        count = cursor.fetchone()[0]
+        print(f"  {table:15s}: {count:>5} rows")
+
+    # Verify out-of-stock products
+    cursor.execute("SELECT COUNT(*) FROM products WHERE stock_count = 0")
+    oos = cursor.fetchone()[0]
+    print(f"\n  Out-of-stock products: {oos} (min required: 5) {'✓' if oos >= 5 else '✗'}")
+
+    # Verify multi-order customers
+    cursor.execute("SELECT COUNT(*) FROM (SELECT customer_id FROM orders GROUP BY customer_id HAVING COUNT(*) > 1)")
+    multi = cursor.fetchone()[0]
+    print(f"  Multi-order customers: {multi} (min required: 10) {'✓' if multi >= 10 else '✗'}")
+
+    # Referential integrity check
+    cursor.execute("""
+        SELECT COUNT(*) FROM returns r 
+        JOIN orders o ON r.order_id = o.order_id 
+        WHERE o.status != 'delivered'
+    """)
+    bad_returns = cursor.fetchone()[0]
+    print(f"  Returns on non-delivered orders: {bad_returns} (should be 0) {'✓' if bad_returns == 0 else '✗'}")
+    print("-" * 40)
+
 
 def main():
-    print('Customers and products initialized')
-if __name__ == '__main__':
+    print("🌱 Seeding ecommerce.db...\n")
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        create_tables(conn)
+        customer_ids = seed_customers(conn, count=60)
+        product_ids = seed_products(conn)
+        orders_info = seed_orders(conn, customer_ids, product_ids, count=120)
+        seed_returns(conn, orders_info, count=30)
+        verify_db(conn)
+        print("\n✅ Database seeded successfully!")
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
     main()
